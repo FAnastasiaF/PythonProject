@@ -353,12 +353,15 @@ def arguments():
     return args
 
 
-args = arguments()
-if (args.work == 'encode'):
-    Encode(args.cipher, args.key, args.input, args.output)
-elif (args.work == 'decode'):
-    Decode(args.cipher, args.key, args.input, args.output)
-elif (args.work == 'train'):
-    Train(args.text, args.model)
-elif (args.work == 'hack'):
-    Hack(args.input, args.output, args.model)
+try:
+    args = arguments()
+    if (args.work == 'encode'):
+        Encode(args.cipher, args.key, args.input, args.output)
+    elif (args.work == 'decode'):
+        Decode(args.cipher, args.key, args.input, args.output)
+    elif (args.work == 'train'):
+        Train(args.text, args.model)
+    elif (args.work == 'hack'):
+        Hack(args.input, args.output, args.model)
+except:
+    print("\nWrong input. Try again")
