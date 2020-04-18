@@ -178,7 +178,7 @@ def Encode(cipher, key, inputfile, outputfile):
             print("Key must be same lenght with text")
             return None
         for i in key:
-            if (not (i in alphabet)):
+            if (not (i in alphabet2)):
                 print("Key must consist of first "
                       "16 lowercase letters")
         ver = vernam()
@@ -229,7 +229,7 @@ def Decode(cipher, key, inputfile, outputfile):
             print("Key must be same lenght with text")
             return None
         for i in key:
-            if (not (i in alphabet)):
+            if (not (i in alphabet2)):
                 print("Key must consist of first "
                       "16 lowercase letters")
                 return None
