@@ -289,7 +289,6 @@ def Hack(inputfile, outputfile, modelfile):
         except:
             print("I can't write in file")
             return None
-        print(outputtxt)
     else:
         print(outputtxt)
 
