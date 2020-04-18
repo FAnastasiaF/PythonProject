@@ -188,7 +188,7 @@ def Encode(cipher, key, inputfile, outputfile):
         return None
     if (outputfile):
         try:
-            output_file(inputtxt, outputfile)
+            output_file(output, fileinputtxt)
         except:
             print("I can't write in file")
             return None
@@ -240,7 +240,7 @@ def Decode(cipher, key, inputfile, outputfile):
         return None
     if (outputfile):
         try:
-            output_file(inputtxt, outputfile)
+            output_file(output, fileinputtxt)
         except:
             print("I can't write in file")
             return None
