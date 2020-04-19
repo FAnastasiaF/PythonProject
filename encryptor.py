@@ -1,6 +1,17 @@
 import argparse
+import string
+import codecs
 
-alphabet = 'abcdefghijklmnopqrstuvwxyz'
+alphabet0 = 'abcdefghijklmnopqrstuvwxyz'
+alphabet0 += alphabet0.upper()
+alphabet0 += string.punctuation
+alphabet0 += ' '
+
+alphabet1 = u'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+alphabet1 += alphabet1.upper()
+alphabet1 += string.punctuation
+alphabet1 += ' '
+
 alphabet2 = ''
 for i in range(16):
     alphabet2 += chr(ord('a') + i)
@@ -8,7 +19,11 @@ for i in range(16):
 
 class caesar:
 
-    def encode(self, txt, key):
+    def encode(self, txt, key, language):
+        if(language):
+            alphabet = alphabet1
+        else:
+            alphabet = alphabet0
         output = ''
         if (key < 0):
             key = len(alphabet) + key
@@ -16,21 +31,26 @@ class caesar:
             if (i in alphabet):
                 n = (alphabet.find(i) + key) % len(alphabet)
                 output += alphabet[n]
-            elif (i.lower() in alphabet):
-                n = (alphabet.find(i.lower()) + key) % len(alphabet)
-                output += (alphabet[n]).upper()
             else:
                 output += i
         return output
 
-    def decode(self, txt, key):
+    def decode(self, txt, key, language):
+        if (language):
+            alphabet = alphabet1
+        else:
+            alphabet = alphabet0
         key *= -1
-        return self.encode(txt, key)
+        return self.encode(txt, key, language)
 
 
 class vigenere:
 
-    def encode(self, txt, key):
+    def encode(self, txt, key, language):
+        if (language):
+            alphabet = alphabet1
+        else:
+            alphabet = alphabet0
         counter = 0
         output = ''
         for i in txt:
@@ -39,34 +59,36 @@ class vigenere:
                 n %= len(alphabet)
                 output += alphabet[n]
                 counter += 1
-            elif (i.lower() in alphabet):
-                n = alphabet.find(i.lower())
-                n += (alphabet.find(key[counter % len(key)]))
-                n %= len(alphabet)
-                output += (alphabet[n]).upper()
-                counter += 1
             else:
                 output += i
         return (output)
 
-    def decode(self, txt, key):
+    def decode(self, txt, key, language):
+        if (language):
+            alphabet = alphabet1
+        else:
+            alphabet = alphabet0
         key1 = ''
         for i in range(len(key)):
             n = len(alphabet) - alphabet.find(key[i])
             n %= len(alphabet)
             key1 += alphabet[n]
-        return self.encode(txt, key1)
+        return self.encode(txt, key1, language)
 
 
-def train(txt):
+def train(txt, language):
+    if(language):
+        alphabet = alphabet1
+    else:
+        alphabet = alphabet0
     k = 0
     d = {}
     for i in txt:
-        if (i.lower() in alphabet):
+        if (i in alphabet):
             try:
-                d[i.lower()] += 1
+                d[i] += 1
             except:
-                d[i.lower()] = 1
+                d[i] = 1
             k += 1
     for i in alphabet:
         if (not (i in d)):
@@ -76,8 +98,12 @@ def train(txt):
     return d
 
 
-def hack(txt, model):
-    txtanalysis = train(txt)
+def hack(txt, model, language):
+    if(language):
+        alphabet = alphabet1
+    else:
+        alphabet = alphabet0
+    txtanalysis = train(txt, language)
     minsum = 100 * len(alphabet)
     sum = 0
     minkey = 0
@@ -91,7 +117,7 @@ def hack(txt, model):
             minkey = key
         sum = 0
     obj = caesar()
-    return (obj.decode(txt, minkey))
+    return (obj.decode(txt, minkey, language))
 
 
 class vernam:
@@ -119,9 +145,14 @@ class vernam:
 
 
 def input_file(file):
-    text = (open(file, "r"))
-    txt = text.read()
-    text.close()
+    try:
+        text = codecs.open(file, "r", "utf-8")
+        txt = text.read()
+        text.close()
+    except:
+        text = (open(file, "r"))
+        txt = text.read()
+        text.close()
     return txt
 
 
@@ -131,22 +162,33 @@ def output_file(file, output_txt):
     text.close()
 
 
-def read_model(model):
+def read_model(model, language):
+    if(language):
+        alphabet = alphabet1
+    else:
+        alphabet = alphabet0
     str = input_file(model)
     model_dict = {}
     number = ""
-    for j in range(len(str)):
-        if (str[j] in alphabet):
+    for j in range(1, len(str)):
+        if ((str[j] in alphabet and str[j-1] == "'" and str[j+1] == "'") or (
+            str[j] == "'" and str[j-1] == '"' and str[j+1] == '"'
+                ) or (str[j] == "\\" and str[j+1] == "'")):
             i = j
-            while (str[j + 4] != ',' and str[j + 4] != '}'):
-                number += str[j + 4]
+            j += 4
+            while (str[j] != ',' and str[j] != '}'):
+                number += str[j]
                 j += 1
             model_dict[str[i]] = float(number)
             number = ""
     return model_dict
 
 
-def Encode(cipher, key, inputfile, outputfile):
+def Encode(cipher, key, inputfile, outputfile, language):
+    if(language):
+        alphabet = alphabet1
+    else:
+        alphabet = alphabet0
     if (inputfile):
         try:
             txt = input_file(inputfile)
@@ -158,7 +200,7 @@ def Encode(cipher, key, inputfile, outputfile):
     if (cipher == 'caesar'):
         try:
             caes = caesar()
-            inputtxt = caes.encode(txt, int(key))
+            inputtxt = caes.encode(txt, int(key), language)
         except:
             print("Key must be integer")
             return None
@@ -172,7 +214,7 @@ def Encode(cipher, key, inputfile, outputfile):
                 print("Key must be same lenght with text")
                 return None
         vig = vigenere()
-        inputtxt = vig.encode(txt, key)
+        inputtxt = vig.encode(txt, key, language)
     elif (cipher == 'vernam'):
         if (len(key) != len(txt)):
             print("Key must be same lenght with text")
@@ -188,7 +230,7 @@ def Encode(cipher, key, inputfile, outputfile):
         return None
     if (outputfile):
         try:
-            output_file(output, fileinputtxt)
+            output_file(outputfile, inputtxt)
         except:
             print("I can't write in file")
             return None
@@ -196,7 +238,11 @@ def Encode(cipher, key, inputfile, outputfile):
         print(inputtxt)
 
 
-def Decode(cipher, key, inputfile, outputfile):
+def Decode(cipher, key, inputfile, outputfile, language):
+    if(language):
+        alphabet = alphabet1
+    else:
+        alphabet = alphabet0
     if (inputfile):
         try:
             txt = input_file(inputfile)
@@ -212,7 +258,7 @@ def Decode(cipher, key, inputfile, outputfile):
             print("Key must be integer")
             return None
         caes = caesar()
-        inputtxt = caes.decode(txt, int(key))
+        inputtxt = caes.decode(txt, int(key), language)
     elif (cipher == 'vigenere' or cipher == 'vernammod'):
         for i in key:
             if (not (i in alphabet)):
@@ -223,7 +269,7 @@ def Decode(cipher, key, inputfile, outputfile):
                 print("Key must be same lenght with text")
                 return None
         vig = vigenere()
-        inputtxt = vig.decode(txt, key)
+        inputtxt = vig.decode(txt, key, language)
     elif (cipher == 'vernam'):
         if (len(key) != len(txt)):
             print("Key must be same lenght with text")
@@ -240,7 +286,7 @@ def Decode(cipher, key, inputfile, outputfile):
         return None
     if (outputfile):
         try:
-            output_file(output, fileinputtxt)
+            output_file(outputfile, inputtxt)
         except:
             print("I can't write in file")
             return None
@@ -248,7 +294,7 @@ def Decode(cipher, key, inputfile, outputfile):
         print(inputtxt)
 
 
-def Train(text, model):
+def Train(text, model, language):
     if (text):
         try:
             txt = input_file(text)
@@ -258,15 +304,15 @@ def Train(text, model):
     else:
         txt = input()
     try:
-        output_file(model, str(train(txt)))
+        output_file(model, str(train(txt, language)))
     except:
         print("Not way to output model file")
         return None
 
 
-def Hack(inputfile, outputfile, modelfile):
+def Hack(inputfile, outputfile, modelfile, language):
     try:
-        model = read_model(modelfile)
+        model = read_model(modelfile, language)
     except:
         print("I can't read model file")
         return None
@@ -279,7 +325,7 @@ def Hack(inputfile, outputfile, modelfile):
     else:
         txt = input()
     try:
-        outputtxt = hack(txt, model)
+        outputtxt = hack(txt, model, language)
     except:
         print("Problem with model")
         return None
@@ -316,6 +362,12 @@ def arguments():
                                                            'to input file')
     encode.add_argument('--output-file', dest='output', help='path '
                                                              'to output file')
+    encode.add_argument('--language', dest='language', help='you must write '
+                                                            'any string '
+                                                            'if cirillic/'
+                                                            'and don\'t write '
+                                                            'this argument '
+                                                            'if latin')
 
     decode = subparsers.add_parser('decode', help='decode')  # decode
     decode.add_argument('--cipher', help='cipher - caesar/'
@@ -336,31 +388,48 @@ def arguments():
                                                            'input file')
     decode.add_argument('--output-file', dest='output', help='path to '
                                                              'output file')
+    decode.add_argument('--language', dest='language', help='you must write '
+                                                            'any string if '
+                                                            'cirillic/'
+                                                            'and don\'t write '
+                                                            'this argument '
+                                                            'if latin')
 
     train = subparsers.add_parser('train', help='train')  # train
     train.add_argument('--text-file', dest='text', help='path '
                                                         'to input text file')
     train.add_argument('--model-file', dest='model', help='output model file')
+    train.add_argument('--language', dest='language', help='you must write any'
+                                                           ' string if '
+                                                           'cirillic/'
+                                                           'and don\'t write '
+                                                           'this argument '
+                                                           'if latin')
 
     hack = subparsers.add_parser('hack', help='hack')  # hack
     hack.add_argument('--input-file', dest='input', help='path to input file')
     hack.add_argument('--output-file', dest='output', help='path to '
                                                            'output file')
     hack.add_argument('--model-file', dest='model', help='input model file')
+    hack.add_argument('--language', dest='language', help='you must write'
+                                                          ' any string if'
+                                                          ' cirillic/and '
+                                                          'don\'t write this'
+                                                          ' argument if '
+                                                          'latin')
 
     args = parser.parse_args()
     return args
 
-
 try:
     args = arguments()
     if (args.work == 'encode'):
-        Encode(args.cipher, args.key, args.input, args.output)
+        Encode(args.cipher, args.key, args.input, args.output, args.language)
     elif (args.work == 'decode'):
-        Decode(args.cipher, args.key, args.input, args.output)
+        Decode(args.cipher, args.key, args.input, args.output, args.language)
     elif (args.work == 'train'):
-        Train(args.text, args.model)
+        Train(args.text, args.model, args.language)
     elif (args.work == 'hack'):
-        Hack(args.input, args.output, args.model)
+        Hack(args.input, args.output, args.model, args.language)
 except:
     print("\nWrong input. Try again")
