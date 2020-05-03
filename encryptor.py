@@ -144,7 +144,7 @@ def output_file(file, output_txt):
         text.write(output_txt)
 
 
-def TryInputFile(inputfile):
+def try_input_file(inputfile):
     txt = ''
     if inputfile:
         try:
@@ -157,7 +157,7 @@ def TryInputFile(inputfile):
     return txt
 
 
-def TryOutputfile(outputfile, inputtxt):
+def try_output_file(outputfile, inputtxt):
     if outputfile:
         try:
             output_file(outputfile, inputtxt)
@@ -168,7 +168,7 @@ def TryOutputfile(outputfile, inputtxt):
         print(inputtxt)
 
 
-def TryCaesarKey(key):
+def try_caesar_key(key):
     try:
         return int(key)
     except ValueError:
@@ -176,14 +176,14 @@ def TryCaesarKey(key):
         sys.exit(0)
 
 
-def TryVigenereKey(key):
+def try_vigenere_key(key):
     for i in key:
         if i not in alphabet:
             print("Key symbols must be in alphabet")
             sys.exit(0)
 
 
-def TryVernamKey(key, txt, nomod):
+def try_vernam_key(key, txt, nomod):
     if len(key) != len(txt):
         print("Key must be same lenght with text")
         sys.exit(0)
@@ -191,58 +191,58 @@ def TryVernamKey(key, txt, nomod):
         if len(alphabet) != 16:
             print("Wrong alphabet for vernam")
             sys.exit(0)
-        TryVigenereKey(key)
+        try_vigenere_key(key)
 
 
-def Encode(cipher, key, inputfile, outputfile, language):
+def encode_call(cipher, key, inputfile, outputfile, language):
     alphabetlanguage(language)
-    txt = TryInputFile(inputfile)
+    txt = try_input_file(inputfile)
     if cipher == 'caesar':
-        key = TryCaesarKey(key)
+        key = try_caesar_key(key)
         caes = Caesar()
         inputtxt = caes.encode(txt, key)
     elif cipher in ('vigenere', 'vernammod'):
-        TryVigenereKey(key)
+        try_vigenere_key(key)
         if cipher == 'vernammod':
-            TryVernamKey(key, txt, False)
+            try_vernam_key(key, txt, False)
         vig = Vigenere()
         inputtxt = vig.encode(txt, key)
     elif cipher == 'vernam':
-        TryVernamKey(key, txt, True)
+        try_vernam_key(key, txt, True)
         ver = Vernam()
         inputtxt = ver.decode(txt, key)
     else:
         print("Wrong cipher")
         return
-    TryOutputfile(outputfile, inputtxt)
+    try_output_file(outputfile, inputtxt)
 
 
-def Decode(cipher, key, inputfile, outputfile, language):
+def decode_call(cipher, key, inputfile, outputfile, language):
     alphabetlanguage(language)
-    txt = TryInputFile(inputfile)
+    txt = try_input_file(inputfile)
     if cipher == 'caesar':
-        key = TryCaesarKey(key)
+        key = try_caesar_key(key)
         caes = Caesar()
         inputtxt = caes.decode(txt, int(key))
     elif cipher in ('vigenere', 'vernammod'):
-        TryVigenereKey(key)
+        try_vigenere_key(key)
         if cipher == 'vernammod':
-            TryVernamKey(key, txt, False)
+            try_vernam_key(key, txt, False)
         vig = Vigenere()
         inputtxt = vig.decode(txt, key)
     elif cipher == 'vernam':
-        TryVernamKey(key, txt, True)
+        try_vernam_key(key, txt, True)
         ver = Vernam()
         inputtxt = ver.decode(txt, key)
     else:
         print("Wrong cipher")
         return
-    TryOutputfile(outputfile, inputtxt)
+    try_output_file(outputfile, inputtxt)
 
 
-def Train(text, model, language):
+def train_call(text, model, language):
     alphabetlanguage(language)
-    txt = TryInputFile(text)
+    txt = try_input_file(text)
     try:
         with open(model, 'wb') as f:
             pickle.dump(train(txt), f)
@@ -251,7 +251,7 @@ def Train(text, model, language):
         return
 
 
-def Hack(inputfile, outputfile, modelfile, language):
+def hack_call(inputfile, outputfile, modelfile, language):
     alphabetlanguage(language)
     try:
         with open(modelfile, 'rb') as f:
@@ -259,13 +259,13 @@ def Hack(inputfile, outputfile, modelfile, language):
     except Exception:
         print("I can't read model file")
         return
-    txt = TryInputFile(inputfile)
+    txt = try_input_file(inputfile)
     try:
         outputtxt = hack(txt, model)
     except Exception:
         print("Problem with model")
         return
-    TryOutputfile(outputfile, outputtxt)
+    try_output_file(outputfile, outputtxt)
 
 
 def arguments():
@@ -344,13 +344,15 @@ def main():
     args = arguments()
 
     if args.work == 'encode':
-        Encode(args.cipher, args.key, args.input, args.output, args.language)
+        encode_call(args.cipher, args.key, args.input,
+                    args.output, args.language)
     elif args.work == 'decode':
-        Decode(args.cipher, args.key, args.input, args.output, args.language)
+        decode_call(args.cipher, args.key, args.input,
+                    args.output, args.language)
     elif args.work == 'train':
-        Train(args.text, args.model, args.language)
+        train_call(args.text, args.model, args.language)
     elif args.work == 'hack':
-        Hack(args.input, args.output, args.model, args.language)
+        hack_call(args.input, args.output, args.model, args.language)
 
 
 if __name__ == '__main__':
