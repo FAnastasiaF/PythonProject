@@ -28,8 +28,6 @@ class Caesar:
 
     def encode(self, txt, key):
         output = ''
-        if key < 0:
-            key = len(alphabet) + key
         for i in txt:
             if i in alphabet:
                 n = (alphabet.find(i) + key) % len(alphabet)
