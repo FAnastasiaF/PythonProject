@@ -7,21 +7,21 @@ import pickle
 
 
 def alphabetlanguage(language):
-    global alphabet
-    alphabet = ''
+    global ALPHABET
+    ALPHABET = ''
     if language == "rus":
-        alphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+        ALPHABET = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
     elif language == "eng":
-        alphabet = 'abcdefghijklmnopqrstuvwxyz'
+        ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
     elif language == "vern":
         for i in range(16):
-            alphabet += chr(ord('a') + i)
+            ALPHABET += chr(ord('a') + i)
     else:
         print("wrong language")
         sys.exit(0)
-    alphabet += alphabet.upper()
-    alphabet += string.punctuation
-    alphabet += ' '
+    ALPHABET += ALPHABET.upper()
+    ALPHABET += string.punctuation
+    ALPHABET += ' '
 
 
 class Caesar:
@@ -29,9 +29,9 @@ class Caesar:
     def encode(self, txt, key):
         output = ''
         for i in txt:
-            if i in alphabet:
-                n = (alphabet.find(i) + key) % len(alphabet)
-                output += alphabet[n]
+            if i in ALPHABET:
+                n = (ALPHABET.find(i) + key) % len(ALPHABET)
+                output += ALPHABET[n]
             else:
                 output += i
         return output
@@ -47,10 +47,10 @@ class Vigenere:
         counter = 0
         output = ''
         for i in txt:
-            if i in alphabet:
-                n = alphabet.find(i) + (alphabet.find(key[counter % len(key)]))
-                n %= len(alphabet)
-                output += alphabet[n]
+            if i in ALPHABET:
+                n = ALPHABET.find(i) + (ALPHABET.find(key[counter % len(key)]))
+                n %= len(ALPHABET)
+                output += ALPHABET[n]
                 counter += 1
             else:
                 output += i
@@ -59,9 +59,9 @@ class Vigenere:
     def decode(self, txt, key):
         key1 = ''
         for i in range(len(key)):
-            n = len(alphabet) - alphabet.find(key[i])
-            n %= len(alphabet)
-            key1 += alphabet[n]
+            n = len(ALPHABET) - ALPHABET.find(key[i])
+            n %= len(ALPHABET)
+            key1 += ALPHABET[n]
         return self.encode(txt, key)
 
 
@@ -69,13 +69,10 @@ def train(txt):
     k = 0
     d = defaultdict(int)
     for i in txt:
-        if i in alphabet:
-            try:
-                d[i] += 1
-            except KeyError:
-                d[i] = 1
+        if i in ALPHABET:
+            d[i] += 1
             k += 1
-    for i in alphabet:
+    for i in ALPHABET:
         if i not in d:
             d[i] = 0
     try:
@@ -89,20 +86,20 @@ def train(txt):
 
 def hack(txt, model):
     txtanalysis = train(txt)
-    minsum = 100 * len(alphabet)
+    minsum = 100 * len(ALPHABET)
     sum = 0
     minkey = 0
-    for key in range(len(alphabet)):
-        for i in range(len(alphabet)):
-            n = txtanalysis[alphabet[(i + key) % len(alphabet)]]
-            n -= model[alphabet[i]]
+    for key in range(len(ALPHABET)):
+        for i in range(len(ALPHABET)):
+            n = txtanalysis[ALPHABET[(i + key) % len(ALPHABET)]]
+            n -= model[ALPHABET[i]]
             sum += n ** 2
         if minsum > sum:
             minsum = sum
             minkey = key
         sum = 0
     obj = Caesar()
-    return (obj.decode(txt, minkey))
+    return obj.decode(txt, minkey)
 
 
 class Vernam:
@@ -111,15 +108,15 @@ class Vernam:
         output = ''
         counter = 0
         for i in txt:
-            if i in alphabet:
-                n = alphabet.find(key[counter]) ^ alphabet.find(i)
-                n %= len(alphabet)
-                output += alphabet[n]
+            if i in ALPHABET:
+                n = ALPHABET.find(key[counter]) ^ ALPHABET.find(i)
+                n %= len(ALPHABET)
+                output += ALPHABET[n]
                 counter += 1
-            elif i.lower() in alphabet:
-                n = alphabet.find(key[counter]) ^ alphabet.find(i.lower())
-                n %= len(alphabet)
-                output += (alphabet[n]).upper()
+            elif i.lower() in ALPHABET:
+                n = ALPHABET.find(key[counter]) ^ ALPHABET.find(i.lower())
+                n %= len(ALPHABET)
+                output += (ALPHABET[n]).upper()
                 counter += 1
             else:
                 output += i
@@ -178,8 +175,8 @@ def try_caesar_key(key):
 
 def try_vigenere_key(key):
     for i in key:
-        if i not in alphabet:
-            print("Key symbols must be in alphabet")
+        if i not in ALPHABET:
+            print("Key symbols must be in ALPHABET")
             sys.exit(0)
 
 
@@ -188,14 +185,13 @@ def try_vernam_key(key, txt, nomod):
         print("Key must be same lenght with text")
         sys.exit(0)
     if nomod:
-        if len(alphabet) != 16:
+        if len(ALPHABET) != 16:
             print("Wrong alphabet for vernam")
             sys.exit(0)
         try_vigenere_key(key)
 
 
-def encode_call(cipher, key, inputfile, outputfile, language):
-    alphabetlanguage(language)
+def encode_call(cipher, key, inputfile, outputfile):
     txt = try_input_file(inputfile)
     if cipher == 'caesar':
         key = try_caesar_key(key)
@@ -217,8 +213,7 @@ def encode_call(cipher, key, inputfile, outputfile, language):
     try_output_file(outputfile, inputtxt)
 
 
-def decode_call(cipher, key, inputfile, outputfile, language):
-    alphabetlanguage(language)
+def decode_call(cipher, key, inputfile, outputfile):
     txt = try_input_file(inputfile)
     if cipher == 'caesar':
         key = try_caesar_key(key)
@@ -240,8 +235,7 @@ def decode_call(cipher, key, inputfile, outputfile, language):
     try_output_file(outputfile, inputtxt)
 
 
-def train_call(text, model, language):
-    alphabetlanguage(language)
+def train_call(text, model):
     txt = try_input_file(text)
     try:
         with open(model, 'wb') as f:
@@ -251,8 +245,7 @@ def train_call(text, model, language):
         return
 
 
-def hack_call(inputfile, outputfile, modelfile, language):
-    alphabetlanguage(language)
+def hack_call(inputfile, outputfile, modelfile):
     try:
         with open(modelfile, 'rb') as f:
             model = pickle.load(f)
@@ -343,17 +336,20 @@ def main():
 
     args = arguments()
 
+    alphabetlanguage(args.language)
+
     if args.work == 'encode':
         encode_call(args.cipher, args.key, args.input,
-                    args.output, args.language)
+                    args.output)
     elif args.work == 'decode':
         decode_call(args.cipher, args.key, args.input,
-                    args.output, args.language)
+                    args.output)
     elif args.work == 'train':
-        train_call(args.text, args.model, args.language)
+        train_call(args.text, args.model)
     elif args.work == 'hack':
-        hack_call(args.input, args.output, args.model, args.language)
+        hack_call(args.input, args.output, args.model)
 
 
 if __name__ == '__main__':
     main()
+
